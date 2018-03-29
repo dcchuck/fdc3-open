@@ -1,0 +1,17 @@
+{
+    "devtools_port": 9090,
+    "startup_app": {
+        "name": "ChartIQ",
+        "description": "ChartIQ Advanced",
+        "url": "https://localhost:3000/chart-iq/index.html",
+        "uuid": "ChartIQ-GreenKey-Demo",
+        "autoShow": true,
+        "frameConnect": "main-window",
+        "shadow": true
+    },
+    "runtime": {
+        "arguments": "",
+        "version":"stable"
+    },
+    "shortcut": {}
+}
