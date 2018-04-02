@@ -70,7 +70,8 @@ const fdc3 = {
 			});
 
 			if (!appWasLaunched) {
-				fin.desktop.Application.createFromManifest(appMap[appName].manifest, app => {
+				const configObject = appMap[appName].configObject;
+				const app = new fin.desktop.Application(configObject, () => {
 					app.run(() => {
 						waitThenPublishContext(intent, context);
 					});
@@ -85,12 +86,29 @@ const appMap = {
 		uuid: 'ChartIQ-GreenKey-Demo',
 		name: 'ChartIQ',
 		url: 'http://localhost:3000/chart-iq',
-		manifest: 'http://localhost:3000/chart-iq/app.json'
+		manifest: 'http://localhost:3000/chart-iq/app.json',
+		configObject: {
+			name: 'ChartIQ',
+			url: 'http://localhost:3000/chart-iq',
+			uuid: 'ChartIQ-GreenKey-Demo',
+			mainWindowOptions: {
+				autoShow: true
+			}
+		}
 	},
 	YahooFinance: {
 		manifest: 'http://localhost:3000/yahoo-finance/app.json',
 		uuid: 'yahoo-finance-demo',
-		name: 'YahooFinance'
+		name: 'YahooFinance',
+		configObject: {
+			name: 'YahooFinance',
+			url: 'https://finance.yahoo.com',
+			uuid: 'yahoo-finance-demo',
+			mainWindowOptions: {
+				autoShow: true,
+				preload: 'http://localhost:3000/yahoo-finance/preload.js'
+			}
+		}
 	}
 }
 
