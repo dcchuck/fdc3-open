@@ -1,0 +1,20 @@
+{
+    "devtools_port": 9090,
+    "startup_app": {
+        "name": "YahooFinance",
+        "description": "Yahoo Finance",
+        "url": "https://finance.yahoo.com",
+        "uuid": "yahoo-finance-demo",
+        "autoShow": true,
+        "preload": "http://localhost:3000/yahoo-finance/preload.js"
+    },
+    "runtime": {
+        "arguments": "",
+        "version": "beta"
+    },
+    "shortcut": {
+        "company": "OpenFin",
+        "description": "Openfin POC",
+        "name": "Openfin POC"
+    }
+}

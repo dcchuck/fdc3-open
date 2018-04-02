@@ -3,8 +3,8 @@
     "startup_app": {
         "name": "ChartIQ",
         "description": "ChartIQ Advanced",
-        "url": "https://localhost:3000/chart-iq/index.html",
-        "uuid": "ChartIQ-GreenKey-Demo",
+        "url": "http://localhost:3000/chart-iq/index.html",
+		"uuid": "ChartIQ-GreenKey-Demo",
         "autoShow": true,
         "frameConnect": "main-window",
         "shadow": true

@@ -15,13 +15,23 @@ function init () {
 }
 
 
-const buttons = document.getElementsByClassName('fdc3');
+const chartIQButtons = document.getElementsByClassName('chart-iq');
 
-for (let i = 0; i < buttons.length; i++) {
-	buttons[i].onclick = (e) => {
+for (let i = 0; i < chartIQButtons.length; i++) {
+	chartIQButtons[i].onclick = (e) => {
 		const context = contexts.filter(el => el.data[0].name === e.target.name);
 		console.log(context)
 		fdc3.open('ChartIQ', 'ViewChart', context[0])
+	}
+}
+
+const yahooFinanceButtons = document.getElementsByClassName('yahoo-finance');
+
+for (let i = 0; i < yahooFinanceButtons.length; i++) {
+	yahooFinanceButtons[i].onclick = (e) => {
+		const context = contexts.filter(el => el.data[0].name === e.target.name);
+		console.log(context)
+		fdc3.open('YahooFinance', 'ViewQuote', context[0])
 	}
 }
 
@@ -33,55 +43,54 @@ const fdc3 = {
 		}
 
 		function waitThenPublishContext(intent, context) {
-			fin.desktop.InterApplicationBus.subscribe('*', 'subscription-confirmed', (m) => {
+			function listener (m) {
 				fin.desktop.InterApplicationBus.send(m, intent, context);
 				console.log(`Sent ${m} ${intent}`);
-			});
+				fin.desktop.InterApplicationBus.unsubscribe('*', 'subscription-confirmed', listener);
+			}
+			fin.desktop.InterApplicationBus.subscribe('*', 'subscription-confirmed', listener);
 		}
 
+		let appWasLaunched = false;
 		fin.desktop.System.getAllApplications(apps => {
 			apps.forEach(app => {
 				if (app.uuid === appMap[appName].uuid) {
+					appWasLaunched = true;
 					if (!app.isRunning) {
 						const wrappedApp = fin.desktop.Application.wrap(app.uuid);
 						wrappedApp.run(() => {
+							console.log('App was launched but not running; Running and then publishing');
 							waitThenPublishContext(intent, context);
 						})
 					} else {
-						console.log('App is running - publishing')
+						console.log('App is running - publishing');
 						publishContext();
 					}
 				}
 			});
 
-			const launchConfig = {
-				name: appMap[appName].name,
-				uuid: appMap[appName].uuid,
-				url: appMap[appName].url,
-				mainWindowOptions: {
-					autoShow: true
-				}
+			if (!appWasLaunched) {
+				fin.desktop.Application.createFromManifest(appMap[appName].manifest, app => {
+					app.run(() => {
+						waitThenPublishContext(intent, context);
+					});
+				});
 			}
-
-			const launchedApp = new fin.desktop.Application(launchConfig,
-				() => {
-					launchedApp.run(() => {
-							console.log(`Application ${appName} launched`);
-							waitThenPublishContext(intent, context);
-						},
-						(e) => console.log(`Error launching ${appName}: ${e}`)
-					);
-				}
-			);
 		});
 	}
 }
 
 const appMap = {
 	ChartIQ: { 
-		uuid: 'ChartIQ-Greenkey-Demo',
+		uuid: 'ChartIQ-GreenKey-Demo',
 		name: 'ChartIQ',
-		url: 'http://localhost:3000/chart-iq'
+		url: 'http://localhost:3000/chart-iq',
+		manifest: 'http://localhost:3000/chart-iq/app.json'
+	},
+	YahooFinance: {
+		manifest: 'http://localhost:3000/yahoo-finance/app.json',
+		uuid: 'yahoo-finance-demo',
+		name: 'YahooFinance'
 	}
 }
 
