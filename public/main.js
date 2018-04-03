@@ -35,6 +35,17 @@ for (let i = 0; i < yahooFinanceButtons.length; i++) {
 	}
 }
 
+const rsrchxButtons = document.getElementsByClassName('rsrchx');
+
+for (let i = 0; i < yahooFinanceButtons.length; i++) {
+	rsrchxButtons[i].onclick = (e) => {
+		const context = contexts.filter(el => el.data[0].name === e.target.name);
+		console.log(context)
+		// RSRCHXchange has implemented a non-FDC3 standard we'll piggy back off of here
+		fdc3.open('ResearchExchange', 'rsrchx-search-request', { text: context[0].data[0].id.ticker });
+	}
+}
+
 const fdc3 = {
 	open: function(appName, intent, context) {
 		function publishContext() {
@@ -107,6 +118,18 @@ const appMap = {
 			mainWindowOptions: {
 				autoShow: true,
 				preload: 'http://localhost:3000/yahoo-finance/preload.js'
+			}
+		}
+	},
+	ResearchExchange: {
+		uuid: 'ResearchExchange-0n4u9uobd519oj4nkz5ru7syvi',
+		name: 'ResearchExchange',
+		configObject: {
+			name: 'ResearchExchange',
+			url: 'https://www.rsrchx.com/login',
+			uuid: 'ResearchExchange-0n4u9uobd519oj4nkz5ru7syvi',
+			mainWindowOptions: {
+				autoShow: true
 			}
 		}
 	}
