@@ -1,6 +1,7 @@
 /* global fin */
+const ofVersion = document.getElementById('openfin-version');
+
 document.addEventListener('DOMContentLoaded', () => {
-    const ofVersion = document.getElementById('no-openfin');
     if (typeof fin !== 'undefined') {
         init();
     } else {
@@ -12,7 +13,7 @@ let fdc3;
 
 function init () {
     fin.desktop.System.getVersion(version => {
-        console.log(version);
+        ofVersion.innerText = `OpenFin Runtime Version ${version}`;
     });
 
     const fdc3ServiceApp = new fin.desktop.Application({
@@ -28,9 +29,13 @@ function init () {
         console.log(`Error launching app: ${e}`);
     });
 
-    fin.desktop.Service.onServiceConnect({ name: 'fdc3-service', uuid: 'fdc3-service' }, service => {
+    function updateDomOnServiceConnect() {
         const serviceDiv = document.getElementById('service-div');
         serviceDiv.innerText = 'FDC3 Service Registered';
+    }
+
+    fin.desktop.Service.onServiceConnect({ name: 'fdc3-service', uuid: 'fdc3-service' }, service => {
+        updateDomOnServiceConnect()
         connectToFDC3Service().then((fdc3ServiceInterface) => fdc3 = fdc3ServiceInterface);
     })
 
