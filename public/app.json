@@ -8,7 +8,7 @@
     },
     "runtime": {
         "arguments": "",
-        "version": "stable"
+        "version": "alpha"
     },
     "shortcut": {
         "company": "OpenFin",

@@ -8,12 +8,45 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+let fdc3;
+
 function init () {
     fin.desktop.System.getVersion(version => {
         console.log(version);
     });
+
+    const fdc3ServiceApp = new fin.desktop.Application({
+        name: 'fdc3-service',
+        url: 'http://localhost:3000/fdc3Service.html',
+        uuid: 'fdc3-service',
+        mainWindowOptions: {
+            autoShow: true
+        }
+    }, () => {
+        fdc3ServiceApp.run();
+    }, (e) => {
+        console.log(`Error launching app: ${e}`);
+    });
+
+    fin.desktop.Service.onServiceConnect({ name: 'fdc3-service', uuid: 'fdc3-service' }, service => {
+        const serviceDiv = document.getElementById('service-div');
+        serviceDiv.innerText = 'FDC3 Service Registered';
+        connectToFDC3Service().then((fdc3ServiceInterface) => fdc3 = fdc3ServiceInterface);
+    })
+
+    async function connectToFDC3Service () {
+        const serviceClient = await fin.desktop.Service.connect({uuid:'fdc3-service'});
+        serviceClient.onServiceDisconnect( service => {
+            //handle disconnected service
+        });
+        return {
+            open: (appName, intent, context) => serviceClient.dispatch('open', { appName: appName, intent: intent, context: context }),
+            get: (appName, intent) => serviceClient.dispatch('get', { appName: appName, inent: intent })
+        }
+    }
 }
 
+// Button Event Listeners
 
 const chartIQButtons = document.getElementsByClassName('chart-iq');
 
@@ -43,95 +76,6 @@ for (let i = 0; i < yahooFinanceButtons.length; i++) {
 		console.log(context)
 		// RSRCHXchange has implemented a non-FDC3 standard we'll piggy back off of here
 		fdc3.open('ResearchExchange', 'rsrchx-search-request', { text: context[0].data[0].id.ticker });
-	}
-}
-
-const fdc3 = {
-	open: function(appName, intent, context) {
-		function publishContext() {
-			console.log(`Sending to ${appName} with intent ${intent}`)
-			fin.desktop.InterApplicationBus.send(appMap[appName].uuid, intent, context);
-		}
-
-		function waitThenPublishContext(intent, context) {
-			function listener (m) {
-				fin.desktop.InterApplicationBus.send(m, intent, context);
-				console.log(`Sent ${m} ${intent}`);
-				fin.desktop.InterApplicationBus.unsubscribe('*', 'subscription-confirmed', listener);
-			}
-			fin.desktop.InterApplicationBus.subscribe('*', 'subscription-confirmed', listener);
-		}
-
-		let appWasLaunched = false;
-		fin.desktop.System.getAllApplications(apps => {
-			apps.forEach(app => {
-				if (app.uuid === appMap[appName].uuid) {
-					appWasLaunched = true;
-					if (!app.isRunning) {
-						const wrappedApp = fin.desktop.Application.wrap(app.uuid);
-						wrappedApp.run(() => {
-							console.log('App was launched but not running; Running and then publishing');
-							waitThenPublishContext(intent, context);
-						})
-					} else {
-						console.log('App is running - publishing');
-						publishContext();
-					}
-				}
-			});
-
-			if (!appWasLaunched) {
-				const configObject = appMap[appName].configObject;
-				const app = new fin.desktop.Application(configObject, () => {
-					app.run(() => {
-						waitThenPublishContext(intent, context);
-					});
-				});
-			}
-		});
-	}
-}
-
-const appMap = {
-	ChartIQ: { 
-		uuid: 'ChartIQ-GreenKey-Demo',
-		name: 'ChartIQ',
-		url: 'http://localhost:3000/chart-iq',
-		manifest: 'http://localhost:3000/chart-iq/app.json',
-		configObject: {
-			name: 'ChartIQ',
-			url: 'http://localhost:3000/chart-iq',
-			uuid: 'ChartIQ-GreenKey-Demo',
-			mainWindowOptions: {
-				autoShow: true
-			}
-		}
-	},
-	YahooFinance: {
-		manifest: 'http://localhost:3000/yahoo-finance/app.json',
-		uuid: 'yahoo-finance-demo',
-		name: 'YahooFinance',
-		configObject: {
-			name: 'YahooFinance',
-			url: 'https://finance.yahoo.com',
-			uuid: 'yahoo-finance-demo',
-			mainWindowOptions: {
-				autoShow: true,
-				preload: 'http://localhost:3000/yahoo-finance/preload.js'
-			}
-		}
-	},
-	ResearchExchange: {
-		uuid: 'ResearchExchange-0n4u9uobd519oj4nkz5ru7syvi',
-		name: 'ResearchExchange',
-		configObject: {
-			name: 'ResearchExchange',
-			url: 'https://www.rsrchx.com/login',
-			uuid: 'ResearchExchange-0n4u9uobd519oj4nkz5ru7syvi',
-			mainWindowOptions: {
-				autoShow: true
-			}
-		}
 	}
 }
 
