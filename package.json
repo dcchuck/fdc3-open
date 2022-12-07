@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.15.3",
+    "express": "^4.18.2",
     "openfin-launcher": "^1.3.12"
   }
 }
